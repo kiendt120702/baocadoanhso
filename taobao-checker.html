@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>📊 Đọc Excel sản phẩm</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 40px;
+      background: #f9f9f9;
+      max-width: 1000px;
+      margin: auto;
+    }
+    h2, h3 {
+      color: #333;
+    }
+    input[type="file"] {
+      padding: 10px;
+      margin-top: 10px;
+    }
+    #loading {
+      display: none;
+      margin-top: 20px;
+      font-style: italic;
+      color: #555;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin-top: 30px;
+      background-color: #fff;
+      box-shadow: 0 0 8px rgba(0,0,0,0.1);
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 12px;
+      text-align: left;
+    }
+    th {
+      background-color: #f1f1f1;
+      font-weight: bold;
+    }
+    #exportBtn {
+      margin-top: 20px;
+      padding: 10px 20px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    #exportBtn:hover {
+      background-color: #0056b3;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>📂 Tải file Excel sản phẩm</h2>
+  <input type="file" id="inputExcel" accept=".xlsx, .xls" />
+  <div id="loading">⏳ Đang xử lý file Excel...</div>
+  <button id="exportBtn" style="display:none;">📥 Tải file kết quả</button>
+
+  <table id="resultTable" style="display:none;">
+    <thead>
+      <tr>
+        <th>STT</th>
+        <th>Tên sản phẩm</th>
+        <th>Lượt truy cập sản phẩm</th>
+        <th>Doanh số (VND)</th>
+        <th>Danh mục</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <h3>Bảng tổng hợp theo dải sản phẩm</h3>
+  <table id="summaryTable" style="display:none;">
+    <thead>
+      <tr>
+        <th>Dải sản phẩm</th>
+        <th>Tổng lượt truy cập</th>
+        <th>Tổng doanh số (VND)</th>
+        <th>Số khách hàng</th>
+        <th>Doanh thu/khách hàng</th>
+        <th>Tỷ lệ chuyển đổi</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <script>
+    let resultData = [];
+    const doanhThuTheoKhachHang = {
+      'Chân váy (dải cũ)': 130000,
+      'Chân váy (dải mới)': 129000,
+      'Quần (dải mới)': 159000,
+      'Quần (dải cũ)': 130000 // giả định chung cho dải cũ nếu cần
+    };
+
+    function getDanhMuc(name) {
+      const match = name.match(/\b(K[ABC])(\d{2})\b/);
+      if (!match) return 'Không xác định';
+
+      const type = match[1];
+      const num = parseInt(match[2], 10);
+
+      if (type === 'KA') {
+        if (num >= 1 && num <= 17) return 'Chân váy (dải cũ)';
+        if (num >= 18 && num <= 99) return 'Chân váy (dải mới)';
+      }
+      if (type === 'KB') {
+        if (num >= 1 && num <= 24) return 'Chân váy (dải cũ)';
+        if (num >= 25 && num <= 99) return 'Chân váy (dải mới)';
+      }
+      if (type === 'KC') {
+        if (num >= 1 && num <= 7) return 'Quần (dải cũ)';
+        if (num >= 8 && num <= 99) return 'Quần (dải mới)';
+      }
+
+      return 'Không xác định';
+    }
+
+    document.getElementById('inputExcel').addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      const reader = new FileReader();
+      document.getElementById('loading').style.display = 'block';
+
+      reader.onload = function(event) {
+        const data = new Uint8Array(event.target.result);
+        const workbook = XLSX.read(data, { type: 'array' });
+
+        const sheet = workbook.Sheets[workbook.SheetNames[0]];
+        const json = XLSX.utils.sheet_to_json(sheet);
+
+        const table = document.getElementById('resultTable');
+        const tbody = table.querySelector('tbody');
+        tbody.innerHTML = '';
+        resultData = [];
+
+        const summary = {};
+
+        json.forEach((row, index) => {
+          const name = row['Sản phẩm'];
+          const views = parseInt(row['Lượt truy cập sản phẩm']) || 0;
+          const revenueRaw = row['Doanh số (Đơn đã xác nhận) (VND)'];
+
+          let revenue = 0;
+          if (typeof revenueRaw === 'string') {
+            revenue = Number(revenueRaw.replace(/\./g, '').replace(',', '.'));
+          } else if (!isNaN(revenueRaw)) {
+            revenue = revenueRaw;
+          }
+
+          const danhMuc = getDanhMuc(name);
+
+          if (!summary[danhMuc]) {
+            summary[danhMuc] = { views: 0, revenue: 0 };
+          }
+          summary[danhMuc].views += views;
+          summary[danhMuc].revenue += revenue;
+
+          const newRow = {
+            STT: index + 1,
+            'Tên sản phẩm': name,
+            'Lượt truy cập sản phẩm': views,
+            'Doanh số (VND)': revenue,
+            'Danh mục': danhMuc
+          };
+          resultData.push(newRow);
+
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${newRow.STT}</td>
+            <td>${name}</td>
+            <td>${views}</td>
+            <td>${revenue.toLocaleString('vi-VN')} đ</td>
+            <td>${danhMuc}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+
+        // Tạo bảng tổng hợp
+        const summaryTable = document.getElementById('summaryTable');
+        const summaryBody = summaryTable.querySelector('tbody');
+        summaryBody.innerHTML = '';
+
+        Object.entries(summary).forEach(([danhMuc, { views, revenue }]) => {
+          const dtkh = doanhThuTheoKhachHang[danhMuc] || 1;
+          const khach = Math.round(revenue / dtkh);
+          const chuyenDoi = views > 0 ? (revenue / dtkh / views * 100).toFixed(2) + '%' : '0%';
+
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${danhMuc}</td>
+            <td>${views}</td>
+            <td>${revenue.toLocaleString('vi-VN')} đ</td>
+            <td>${khach}</td>
+            <td>${dtkh.toLocaleString('vi-VN')} đ</td>
+            <td>${chuyenDoi}</td>
+          `;
+          summaryBody.appendChild(tr);
+        });
+
+        document.getElementById('loading').style.display = 'none';
+        table.style.display = 'table';
+        summaryTable.style.display = 'table';
+        document.getElementById('exportBtn').style.display = 'inline-block';
+      };
+
+      reader.readAsArrayBuffer(file);
+    });
+
+    document.getElementById('exportBtn').addEventListener('click', function() {
+      const ws = XLSX.utils.json_to_sheet(resultData);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'Kết quả');
+      XLSX.writeFile(wb, 'ket_qua_phan_loai.xlsx');
+    });
+  </script>
+
+</body>
+</html>
