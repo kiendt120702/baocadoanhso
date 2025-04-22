@@ -1,28 +1,107 @@
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-  <meta charset="UTF-8">
-  <title>📊 Đọc Excel sản phẩm</title>
-  <link rel="stylesheet" href="style.css">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-</head>
-<body>
-
-  <h2>📂 Tải file Excel sản phẩm</h2>
-  <input type="file" id="inputExcel" accept=".xlsx, .xls" />
-  <div id="loading">⏳ Đang xử lý file Excel...</div>
-  <button id="exportBtn" style="display:none;">📥 Tải file kết quả</button>
+function renderSummary(summary) {
+    const danhMucs = ['Chân váy (dải cũ)', 'Chân váy (dải mới)', 'Quần (dải mới)'];
+    const table = document.getElementById('summaryTable');
+    const tbody = table.querySelector('tbody');
+    tbody.innerHTML = '';
   
-  <table id="summaryTable" style="display:none;">
-    <tbody></tbody>
-  </table>
+    let tongDoanhSo = 0;
+    let tongTraffic = 0;
+    let tongKhach = 0;
   
-  <div id="categoryTables"></div>
-
-  <script src="config.js"></script>
-  <script src="main.js"></script>
-  <script src="renderCategoryTables.js"></script>
-  <script src="renderSummary.js"></script>
-
-</body>
-</html>
+    // Tính tổng trước
+    danhMucs.forEach((danhMuc) => {
+      const dtkh = doanhThuTheoKhachHang[danhMuc] || 0;
+      const views = summary[danhMuc].views;
+      const revenue = summary[danhMuc].revenue;
+      const khach = Math.round(revenue / dtkh);
+  
+      tongDoanhSo += revenue;
+      tongTraffic += views;
+      tongKhach += khach;
+    });
+  
+    // Tính sau hoàn huỷ tổng từ ô nhập tay
+    const afterInputId = 'after-input-Tổng';
+    const afterValue = summary['Tổng']?.after || Math.round(tongDoanhSo * 0.97);
+    summary['Tổng'] = summary['Tổng'] || {};
+    summary['Tổng'].after = afterValue;
+  
+    const hoanHuyTong = tongDoanhSo > 0
+      ? (((tongDoanhSo - afterValue) / tongDoanhSo) * 100).toFixed(2)
+      : '0.00';
+  
+    const tongChuyenDoi = tongTraffic > 0 ? (tongKhach / tongTraffic * 100).toFixed(2) + ' %' : '0 %';
+    const doanhSoMoiKH_Tong = tongKhach > 0 ? (tongDoanhSo / tongKhach).toLocaleString('vi-VN') + ' đ' : '0 đ';
+  
+    // Render dòng Tổng trước
+    const tongGroup = document.createElement('tr');
+    tongGroup.className = 'highlight-group';
+    tongGroup.innerHTML = `<td colspan="2">Tổng</td>`;
+    tbody.appendChild(tongGroup);
+  
+    const tongRows = [
+      ['Doanh số', tongDoanhSo.toLocaleString('vi-VN') + ' đ'],
+      ['Traffic', tongTraffic],
+      ['Tỉ lệ chuyển đổi (%)', tongChuyenDoi],
+      ['Số khách hàng', tongKhach],
+      ['Doanh số mỗi khách hàng', doanhSoMoiKH_Tong],
+      ['Tỷ lệ hoàn huỷ (%)', hoanHuyTong + ' %'],
+      ['Doanh số sau hoàn huỷ', `<input type="number" id="${afterInputId}" value="${afterValue}" data-danhmuc="Tổng" style="width: 120px;">`],
+    ];
+  
+    tongRows.forEach(([label, value]) => {
+      const tr = document.createElement('tr');
+      tr.className = label.includes('Tỉ lệ') || label.includes('Traffic') ? 'highlight-sub' : '';
+      tr.innerHTML = `<td>${label}</td><td>${value}</td>`;
+      tbody.appendChild(tr);
+    });
+  
+    // Render các dải sau
+    danhMucs.forEach((danhMuc) => {
+      const dtkh = doanhThuTheoKhachHang[danhMuc] || 0;
+      const views = summary[danhMuc].views;
+      const revenue = summary[danhMuc].revenue;
+      const khach = Math.round(revenue / dtkh);
+      const chuyenDoi = views > 0 ? (khach / views * 100).toFixed(2) + ' %' : '0 %';
+  
+      const after = revenue * (1 - hoanHuyTong / 100);
+      summary[danhMuc].after = after;
+  
+      const doanhSoMoiKH = dtkh.toLocaleString('vi-VN') + ' đ';
+  
+      const groupRow = document.createElement('tr');
+      groupRow.className = 'highlight-group';
+      groupRow.innerHTML = `<td colspan="2">${danhMuc}</td>`;
+      tbody.appendChild(groupRow);
+  
+      const rows = [
+        ['Doanh số', revenue.toLocaleString('vi-VN') + ' đ'],
+        ['Traffic', views],
+        ['Tỉ lệ chuyển đổi (%)', chuyenDoi],
+        ['Số khách hàng', khach],
+        ['Doanh số mỗi khách hàng', doanhSoMoiKH],
+        ['Tỷ lệ hoàn huỷ (%)', hoanHuyTong + ' %'],
+        ['Doanh số sau hoàn huỷ', after.toLocaleString('vi-VN') + ' đ'],
+      ];
+  
+      rows.forEach(([label, value]) => {
+        const tr = document.createElement('tr');
+        tr.className = label.includes('Tỉ lệ') || label.includes('Traffic') ? 'highlight-sub' : '';
+        tr.innerHTML = `<td>${label}</td><td>${value}</td>`;
+        tbody.appendChild(tr);
+      });
+    });
+  
+    // Gắn sự kiện khi nhập ô tổng
+    const input = document.getElementById(afterInputId);
+    if (input) {
+      input.addEventListener('change', () => {
+        const newVal = parseFloat(input.value);
+        if (!isNaN(newVal)) {
+          summary['Tổng'].after = newVal;
+          renderSummary(summary);
+        }
+      });
+    }
+  }
+  
