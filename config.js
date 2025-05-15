@@ -1,16 +1,13 @@
 // Cấu hình phân loại sản phẩm
 let productCategories = {
-  // Cấu hình cho loại KA (Ví dụ: Chân váy)
   "KA": [
     { min: 1, max: 17, category: "Chân váy (dải cũ)" },
     { min: 18, max: 99, category: "Chân váy (dải mới)" }
   ],
-  // Cấu hình cho loại KB (Ví dụ: Chân váy loại khác)
   "KB": [
     { min: 1, max: 24, category: "Chân váy (dải cũ)" },
     { min: 25, max: 99, category: "Chân váy (dải mới)" }
   ],
-  // Cấu hình cho loại KC (Ví dụ: Quần)
   "KC": [
     { min: 1, max: 6, category: "Quần (dải cũ)" },
     { min: 7, max: 99, category: "Quần (dải mới)" }
@@ -26,15 +23,22 @@ const doanhThuTheoKhachHang = {
 };
 
 function getDanhMuc(name) {
-  const match = name.match(/\b(K[A-Z])(\d{2})\b/);
+  if (!name || typeof name !== 'string') return 'Không xác định';
+
+  // Chuẩn hóa chuỗi: loại bỏ [, ], -, dấu cách và chuyển thành chữ hoa
+  const cleanedName = name
+    .replace(/[\[\]\-\s]+/g, '')
+    .toUpperCase();
+
+  // Sửa regex: bỏ \b để khớp trong chuỗi dài, vẫn tìm K[A-Z]\d{2}
+  const match = cleanedName.match(/(K[A-Z])(\d{2})/);
   if (!match) return 'Không xác định';
 
-  const type = match[1];
-  const num = parseInt(match[2], 10);
+  const type = match[1]; // Ví dụ: KC
+  const num = parseInt(match[2], 10); // Ví dụ: 02
 
   // Kiểm tra nếu loại sản phẩm có trong cấu hình
   if (productCategories[type]) {
-    // Tìm danh mục phù hợp dựa trên số
     for (const range of productCategories[type]) {
       if (num >= range.min && num <= range.max) {
         return range.category;
