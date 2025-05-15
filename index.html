@@ -2,27 +2,72 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
-  <title>📊 Đọc Excel sản phẩm</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>📊 Phân tích dữ liệu sản phẩm</title>
   <link rel="stylesheet" href="style.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body>
 
-  <h2>📂 Tải file Excel sản phẩm</h2>
-  <input type="file" id="inputExcel" accept=".xlsx, .xls" />
-  <div id="loading">⏳ Đang xử lý file Excel...</div>
-  <button id="exportBtn" style="display:none;">📥 Tải file kết quả</button>
-  
-  <table id="summaryTable" style="display:none;">
-    <tbody></tbody>
-  </table>
-  
-  <div id="categoryTables"></div>
+  <div class="dashboard-container">
 
-  <script src="config.js"></script>
-  <script src="main.js"></script>
-  <script src="renderCategoryTables.js"></script>
-  <script src="renderSummary.js"></script>
+    <div class="dashboard-content">
+      <div class="upload-container">
+        <h2 class="upload-title">Tải lên file Excel sản phẩm</h2>
+        <p class="upload-description">Tải lên file Excel của bạn để phân tích doanh số và lượt truy cập theo từng danh mục sản phẩm</p>
+        
+        <div class="upload-area" id="dropZone">
+          <div class="upload-icon">📁</div>
+          <p>Kéo và thả file Excel vào đây</p>
+          <p>hoặc</p>
+          <button type="button" class="upload-button" id="uploadBtn">Chọn file Excel</button>
+          <p class="file-type-hint">Chấp nhận file .xlsx, .xls</p>
+        </div>
+        
+        <input type="file" id="inputExcel" accept=".xlsx, .xls" />
+        
+        <div class="file-info" id="fileInfo">
+          <div class="file-name">
+            <span class="file-icon">✅</span>
+            <span id="fileName">File đã sẵn sàng</span>
+          </div>
+          <button type="button" class="process-button" id="processButton">Phân tích dữ liệu</button>
+        </div>
+        
+        <div id="loading">
+          <div class="loading-spinner"></div>
+          <p>Đang xử lý dữ liệu...</p>
+        </div>
+      </div>
+      
+      <div class="results-container" id="resultsContainer">
+        <div class="results-header">
+          <h2>Kết quả phân tích</h2>
+          <button id="exportBtn" class="export-button">
+            <span class="export-icon">📥</span> Tải file kết quả
+          </button>
+        </div>
+        
+        <div class="summary-container">
+          <h3 class="section-title">Bảng tổng hợp</h3>
+          <table id="summaryTable" class="summary-table">
+            <tbody></tbody>
+          </table>
+        </div>
+        
+        <div class="category-container">
+          <h3 class="section-title">Chi tiết theo danh mục</h3>
+          <div id="categoryTables" class="category-tables"></div>
+        </div>
+      </div>
+    </div>
+    
+  </div>
+
+  <script src="/js/config.js"></script>
+  <script src="/js/main.js"></script>
+  <script src="/js/renderCategoryTables.js"></script>
+  <script src="/js/renderSummary.js"></script>
 
 </body>
 </html>
