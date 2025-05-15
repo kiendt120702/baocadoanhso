@@ -1,5 +1,5 @@
 function renderSummary(summary) {
-  const danhMucs = ['Chân váy (dải cũ)', 'Chân váy (dải mới)', 'Quần (dải mới)', 'Không xác định'];
+  const danhMucs = ['Chân váy (dải cũ)', 'Chân váy (dải mới)', 'Quần (dải mới)', 'Quần (dải cũ)', 'Không xác định'];
   const table = document.getElementById('summaryTable');
   const tbody = table.querySelector('tbody');
   tbody.innerHTML = '';
@@ -8,7 +8,6 @@ function renderSummary(summary) {
   let tongTraffic = 0;
   let tongKhach = 0;
 
-  // Tính tổng trước
   danhMucs.forEach((danhMuc) => {
     const dtkh = doanhThuTheoKhachHang[danhMuc] || 0;
     const views = summary[danhMuc]?.views || 0;
@@ -20,7 +19,6 @@ function renderSummary(summary) {
     tongKhach += khach;
   });
 
-  // Tính sau hoàn huỷ tổng từ ô nhập tay
   const afterInputId = 'after-input-Tổng';
   const afterValue = summary['Tổng']?.after || Math.round(tongDoanhSo * 0.97);
   summary['Tổng'] = summary['Tổng'] || {};
@@ -33,7 +31,6 @@ function renderSummary(summary) {
   const tongChuyenDoi = tongTraffic > 0 ? (tongKhach / tongTraffic * 100).toFixed(2) + ' %' : '0 %';
   const doanhSoMoiKH_Tong = tongKhach > 0 ? (tongDoanhSo / tongKhach).toLocaleString('vi-VN') + ' đ' : '0 đ';
 
-  // Render dòng Tổng trước
   const tongGroup = document.createElement('tr');
   tongGroup.className = 'highlight-group';
   tongGroup.innerHTML = `<td colspan="2" class="category-header">Tổng</td>`;
@@ -56,7 +53,6 @@ function renderSummary(summary) {
     tbody.appendChild(tr);
   });
 
-  // Render các dải sau
   danhMucs.forEach((danhMuc) => {
     if (!summary[danhMuc]) return;
 
@@ -94,7 +90,6 @@ function renderSummary(summary) {
     });
   });
 
-  // Thêm hiệu ứng và xử lý sự kiện cho input
   const input = document.getElementById(afterInputId);
   if (input) {
     input.addEventListener('change', () => {
@@ -105,7 +100,6 @@ function renderSummary(summary) {
       }
     });
     
-    // Thêm hiệu ứng focus
     input.addEventListener('focus', function() {
       this.parentNode.parentNode.classList.add('active-row');
     });
