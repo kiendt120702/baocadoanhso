@@ -9,7 +9,7 @@ let productCategories = {
     { min: 25, max: 99, category: "Chân váy (dải mới)" }
   ],
   "KC": [
-    { min: 1, max: 6, category: "Quần (dải cũ)" },
+    { min: 1, max: 6, category: "Chân váy (dải cũ)" }, // Đã thay đổi từ "Quần (dải cũ)" sang "Chân váy (dải cũ)"
     { min: 7, max: 99, category: "Quần (dải mới)" }
   ]
 };
@@ -20,6 +20,7 @@ const doanhThuTheoKhachHang = {
   'Chân váy (dải cũ)': 130000,
   'Chân váy (dải mới)': 129000,
   'Quần (dải mới)': 159000,
+  // 'Quần (dải cũ)' đã bị xóa vì đã gộp vào 'Chân váy (dải cũ)'
 };
 
 function getDanhMuc(name) {
