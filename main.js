@@ -111,15 +111,15 @@ document.addEventListener('DOMContentLoaded', function() {
           'Tổng': { views: 0, revenue: 0 },
           'Chân váy (dải cũ)': { views: 0, revenue: 0 },
           'Chân váy (dải mới)': { views: 0, revenue: 0 },
-          'Quần (dải mới)': { views: 0, revenue: 0 },
-          'Quần (dải cũ)': { views: 0, revenue: 0 }
+          'Quần (dải mới)': { views: 0, revenue: 0 }
+          // 'Quần (dải cũ)' đã được gộp vào 'Chân váy (dải cũ)'
         };
     
         const categoryData = {
           'Chân váy (dải cũ)': [],
           'Chân váy (dải mới)': [],
-          'Quần (dải mới)': [],
-          'Quần (dải cũ)': []
+          'Quần (dải mới)': []
+          // 'Quần (dải cũ)' đã được gộp vào 'Chân váy (dải cũ)'
         };
     
         json.forEach(row => {
