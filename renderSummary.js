@@ -1,5 +1,7 @@
 function renderSummary(summary) {
-  const danhMucs = ['Chân váy (dải cũ)', 'Chân váy (dải mới)', 'Quần (dải mới)', 'Quần (dải cũ)', 'Không xác định'];
+  const danhMucs = ['Chân váy (dải cũ)', 'Chân váy (dải mới)', 'Quần (dải mới)', 'Không xác định'];
+  // Đã xóa 'Quần (dải cũ)' khỏi danh sách vì đã gộp vào 'Chân váy (dải cũ)'
+  
   const table = document.getElementById('summaryTable');
   const tbody = table.querySelector('tbody');
   tbody.innerHTML = '';
